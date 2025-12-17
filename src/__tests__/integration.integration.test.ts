@@ -19,7 +19,7 @@ describe("MCP Server Integration", () => {
 
   beforeAll(async () => {
     const serverPath = path.join(process.cwd(), "dist/index.js");
-    
+
     transport = new StdioClientTransport({
       command: "node",
       args: [serverPath],
@@ -32,7 +32,7 @@ describe("MCP Server Integration", () => {
 
     client = new Client(
       { name: "test-client", version: "1.0.0" },
-      { capabilities: {} }
+      { capabilities: {} },
     );
 
     await client.connect(transport);
@@ -53,15 +53,15 @@ describe("MCP Server Integration", () => {
   describe("tools/list", () => {
     it("returns all 12 tools", async () => {
       const result = await client.listTools();
-      
+
       expect(result.tools).toHaveLength(12);
-      expect(result.tools.map(t => t.name)).toContain("get_genesis_account");
-      expect(result.tools.map(t => t.name)).toContain("get_swap_quote");
+      expect(result.tools.map((t) => t.name)).toContain("get_genesis_account");
+      expect(result.tools.map((t) => t.name)).toContain("get_swap_quote");
     });
 
     it("each tool has valid schema", async () => {
       const result = await client.listTools();
-      
+
       for (const tool of result.tools) {
         expect(tool.name).toBeTruthy();
         expect(tool.description).toBeTruthy();
@@ -73,10 +73,10 @@ describe("MCP Server Integration", () => {
 
   describe("tools/call - Error Handling", () => {
     it("returns error for unknown tool", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "nonexistent_tool",
         arguments: {},
-      }) as CallToolResult;
+      })) as CallToolResult;
 
       expect(result.isError).toBe(true);
       expect(result.content[0]).toHaveProperty("text");
@@ -84,10 +84,10 @@ describe("MCP Server Integration", () => {
     });
 
     it("returns error for missing required params", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "get_genesis_account",
         arguments: {},
-      }) as CallToolResult;
+      })) as CallToolResult;
 
       expect(result.isError).toBe(true);
     });
@@ -95,22 +95,23 @@ describe("MCP Server Integration", () => {
 
   describe("tools/call - Real RPC (mainnet)", () => {
     it("handles non-existent account gracefully", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "get_genesis_account",
         arguments: { address: "11111111111111111111111111111111" },
-      }) as CallToolResult;
+      })) as CallToolResult;
 
       // May return "not found" or an error about wrong account type
       const text = result.content[0].text;
-      const isHandled = text.includes("not found") || text.includes("Error") || result.isError;
+      const isHandled =
+        text.includes("not found") || text.includes("Error") || result.isError;
       expect(isHandled).toBe(true);
     });
 
     it("handles invalid public key format", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "get_genesis_account",
         arguments: { address: "invalid-pubkey-format" },
-      }) as CallToolResult;
+      })) as CallToolResult;
 
       expect(result.isError).toBe(true);
     });
@@ -118,14 +119,14 @@ describe("MCP Server Integration", () => {
 
   describe("tools/call - Swap Quote Validation", () => {
     it("rejects invalid swap direction", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "get_swap_quote",
         arguments: {
           bondingCurveBucket: "11111111111111111111111111111111",
           amountIn: "1000000",
           direction: "InvalidDirection",
         },
-      }) as CallToolResult;
+      })) as CallToolResult;
 
       expect(result.isError).toBe(true);
     });

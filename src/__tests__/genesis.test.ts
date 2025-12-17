@@ -222,15 +222,20 @@ describe("Genesis MCP Server", () => {
 
     describe("get_genesis_account", () => {
       it("returns genesis account data", async () => {
-        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(mockGenesisAccountData as any);
+        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(
+          mockGenesisAccountData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: { address: "GenesisAccountPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: { address: "GenesisAccountPubkey123" },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.content[0].type).toBe("text");
         const data = JSON.parse(result.content[0].text);
@@ -241,13 +246,16 @@ describe("Genesis MCP Server", () => {
       it("returns not found message when account doesn't exist", async () => {
         vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(null);
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: { address: "NonExistentAccount" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: { address: "NonExistentAccount" },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.content[0].text).toContain("not found");
       });
@@ -255,15 +263,20 @@ describe("Genesis MCP Server", () => {
 
     describe("get_genesis_account_by_mint", () => {
       it("returns genesis account by mint", async () => {
-        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(mockGenesisAccountData as any);
+        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(
+          mockGenesisAccountData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account_by_mint",
-            arguments: { baseMint: "BaseMintPubkey123", genesisIndex: 0 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account_by_mint",
+              arguments: { baseMint: "BaseMintPubkey123", genesisIndex: 0 },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("GenesisAccountPda123");
@@ -273,15 +286,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_bonding_curve", () => {
       it("returns bonding curve bucket data", async () => {
-        vi.mocked(safeFetchBondingCurveBucketV2).mockResolvedValueOnce(mockBondingCurveBucketData as any);
+        vi.mocked(safeFetchBondingCurveBucketV2).mockResolvedValueOnce(
+          mockBondingCurveBucketData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_bonding_curve",
-            arguments: { genesisAccount: "GenesisAccountPubkey123", bucketIndex: 0 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_bonding_curve",
+              arguments: {
+                genesisAccount: "GenesisAccountPubkey123",
+                bucketIndex: 0,
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("BondingCurveBucketPda123");
@@ -291,13 +312,19 @@ describe("Genesis MCP Server", () => {
       it("returns not found when bucket doesn't exist", async () => {
         vi.mocked(safeFetchBondingCurveBucketV2).mockResolvedValueOnce(null);
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_bonding_curve",
-            arguments: { genesisAccount: "GenesisAccountPubkey123", bucketIndex: 99 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_bonding_curve",
+              arguments: {
+                genesisAccount: "GenesisAccountPubkey123",
+                bucketIndex: 99,
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.content[0].text).toContain("not found");
       });
@@ -305,15 +332,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_launch_pool", () => {
       it("returns launch pool bucket data", async () => {
-        vi.mocked(safeFetchLaunchPoolBucketV2).mockResolvedValueOnce(mockLaunchPoolBucketData as any);
+        vi.mocked(safeFetchLaunchPoolBucketV2).mockResolvedValueOnce(
+          mockLaunchPoolBucketData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_launch_pool",
-            arguments: { genesisAccount: "GenesisAccountPubkey123", bucketIndex: 1 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_launch_pool",
+              arguments: {
+                genesisAccount: "GenesisAccountPubkey123",
+                bucketIndex: 1,
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("LaunchPoolBucketPda123");
@@ -322,15 +357,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_presale", () => {
       it("returns presale bucket data", async () => {
-        vi.mocked(safeFetchPresaleBucketV2).mockResolvedValueOnce(mockPresaleBucketData as any);
+        vi.mocked(safeFetchPresaleBucketV2).mockResolvedValueOnce(
+          mockPresaleBucketData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_presale",
-            arguments: { genesisAccount: "GenesisAccountPubkey123", bucketIndex: 2 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_presale",
+              arguments: {
+                genesisAccount: "GenesisAccountPubkey123",
+                bucketIndex: 2,
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("PresaleBucketPda123");
@@ -339,15 +382,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_vault", () => {
       it("returns vault bucket data", async () => {
-        vi.mocked(safeFetchVaultBucketV2).mockResolvedValueOnce(mockVaultBucketData as any);
+        vi.mocked(safeFetchVaultBucketV2).mockResolvedValueOnce(
+          mockVaultBucketData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_vault",
-            arguments: { genesisAccount: "GenesisAccountPubkey123", bucketIndex: 3 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_vault",
+              arguments: {
+                genesisAccount: "GenesisAccountPubkey123",
+                bucketIndex: 3,
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("VaultBucketPda123");
@@ -356,15 +407,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_launch_pool_deposit", () => {
       it("returns deposit data", async () => {
-        vi.mocked(safeFetchLaunchPoolDepositV2).mockResolvedValueOnce(mockDepositData as any);
+        vi.mocked(safeFetchLaunchPoolDepositV2).mockResolvedValueOnce(
+          mockDepositData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_launch_pool_deposit",
-            arguments: { bucketAddress: "LaunchPoolBucketPubkey123", recipient: "DepositorPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_launch_pool_deposit",
+              arguments: {
+                bucketAddress: "LaunchPoolBucketPubkey123",
+                recipient: "DepositorPubkey123",
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("LaunchPoolDepositPda123");
@@ -374,13 +433,19 @@ describe("Genesis MCP Server", () => {
       it("returns not found when deposit doesn't exist", async () => {
         vi.mocked(safeFetchLaunchPoolDepositV2).mockResolvedValueOnce(null);
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_launch_pool_deposit",
-            arguments: { bucketAddress: "LaunchPoolBucketPubkey123", recipient: "UnknownDepositor" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_launch_pool_deposit",
+              arguments: {
+                bucketAddress: "LaunchPoolBucketPubkey123",
+                recipient: "UnknownDepositor",
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.content[0].text).toContain("not found");
       });
@@ -388,15 +453,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_presale_deposit", () => {
       it("returns presale deposit data", async () => {
-        vi.mocked(safeFetchPresaleDepositV2).mockResolvedValueOnce(mockDepositData as any);
+        vi.mocked(safeFetchPresaleDepositV2).mockResolvedValueOnce(
+          mockDepositData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_presale_deposit",
-            arguments: { bucketAddress: "PresaleBucketPubkey123", recipient: "DepositorPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_presale_deposit",
+              arguments: {
+                bucketAddress: "PresaleBucketPubkey123",
+                recipient: "DepositorPubkey123",
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("PresaleDepositPda123");
@@ -405,15 +478,23 @@ describe("Genesis MCP Server", () => {
 
     describe("get_vault_deposit", () => {
       it("returns vault deposit data", async () => {
-        vi.mocked(safeFetchVaultDepositV2).mockResolvedValueOnce(mockDepositData as any);
+        vi.mocked(safeFetchVaultDepositV2).mockResolvedValueOnce(
+          mockDepositData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_vault_deposit",
-            arguments: { bucketAddress: "VaultBucketPubkey123", recipient: "DepositorPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_vault_deposit",
+              arguments: {
+                bucketAddress: "VaultBucketPubkey123",
+                recipient: "DepositorPubkey123",
+              },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.address).toBe("VaultDepositPda123");
@@ -422,16 +503,21 @@ describe("Genesis MCP Server", () => {
 
     describe("get_current_price", () => {
       it("returns current bonding curve price", async () => {
-        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(mockBondingCurveBucketData as any);
+        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(
+          mockBondingCurveBucketData as any,
+        );
         vi.mocked(getCurrentPrice).mockReturnValueOnce(BigInt("30000000"));
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_current_price",
-            arguments: { bondingCurveBucket: "BondingCurveBucketPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_current_price",
+              arguments: { bondingCurveBucket: "BondingCurveBucketPubkey123" },
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.price).toBe("30000000");
@@ -441,24 +527,29 @@ describe("Genesis MCP Server", () => {
 
     describe("get_swap_quote", () => {
       it("returns swap quote for buy direction", async () => {
-        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(mockBondingCurveBucketData as any);
+        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(
+          mockBondingCurveBucketData as any,
+        );
         vi.mocked(getSwapResult).mockReturnValueOnce({
           amountIn: BigInt("1000000000"),
           fee: BigInt("5000000"),
           amountOut: BigInt("33000000000"),
         });
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_swap_quote",
-            arguments: {
-              bondingCurveBucket: "BondingCurveBucketPubkey123",
-              amountIn: "1000000000",
-              direction: "Buy",
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_swap_quote",
+              arguments: {
+                bondingCurveBucket: "BondingCurveBucketPubkey123",
+                amountIn: "1000000000",
+                direction: "Buy",
+              },
             },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.amountIn).toBe("1000000000");
@@ -468,24 +559,29 @@ describe("Genesis MCP Server", () => {
       });
 
       it("returns swap quote for sell direction", async () => {
-        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(mockBondingCurveBucketData as any);
+        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValueOnce(
+          mockBondingCurveBucketData as any,
+        );
         vi.mocked(getSwapResult).mockReturnValueOnce({
           amountIn: BigInt("33000000000"),
           fee: BigInt("2500000"),
           amountOut: BigInt("950000000"),
         });
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_swap_quote",
-            arguments: {
-              bondingCurveBucket: "BondingCurveBucketPubkey123",
-              amountIn: "33000000000",
-              direction: "Sell",
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_swap_quote",
+              arguments: {
+                bondingCurveBucket: "BondingCurveBucketPubkey123",
+                amountIn: "33000000000",
+                direction: "Sell",
+              },
             },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.direction).toBe("Sell");
@@ -497,17 +593,27 @@ describe("Genesis MCP Server", () => {
       it("returns all genesis accounts without filters", async () => {
         const mockBuilder = {
           whereField: vi.fn().mockReturnThis(),
-          get: vi.fn().mockResolvedValueOnce([mockGenesisAccountData, mockGenesisAccountData]),
+          get: vi
+            .fn()
+            .mockResolvedValueOnce([
+              mockGenesisAccountData,
+              mockGenesisAccountData,
+            ]),
         };
-        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(mockBuilder as any);
+        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(
+          mockBuilder as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "list_genesis_accounts",
-            arguments: {},
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "list_genesis_accounts",
+              arguments: {},
+            },
           },
-        }, {});
+          {},
+        );
 
         const data = JSON.parse(result.content[0].text);
         expect(data.count).toBe(2);
@@ -519,17 +625,25 @@ describe("Genesis MCP Server", () => {
           whereField: vi.fn().mockReturnThis(),
           get: vi.fn().mockResolvedValueOnce([mockGenesisAccountData]),
         };
-        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(mockBuilder as any);
+        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(
+          mockBuilder as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "list_genesis_accounts",
-            arguments: { authority: "AuthorityPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "list_genesis_accounts",
+              arguments: { authority: "AuthorityPubkey123" },
+            },
           },
-        }, {});
+          {},
+        );
 
-        expect(mockBuilder.whereField).toHaveBeenCalledWith("authority", "AuthorityPubkey123");
+        expect(mockBuilder.whereField).toHaveBeenCalledWith(
+          "authority",
+          "AuthorityPubkey123",
+        );
         const data = JSON.parse(result.content[0].text);
         expect(data.count).toBe(1);
       });
@@ -539,59 +653,80 @@ describe("Genesis MCP Server", () => {
           whereField: vi.fn().mockReturnThis(),
           get: vi.fn().mockResolvedValueOnce([mockGenesisAccountData]),
         };
-        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(mockBuilder as any);
+        vi.mocked(getGenesisAccountV2GpaBuilder).mockReturnValueOnce(
+          mockBuilder as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "list_genesis_accounts",
-            arguments: { baseMint: "BaseMintPubkey123" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "list_genesis_accounts",
+              arguments: { baseMint: "BaseMintPubkey123" },
+            },
           },
-        }, {});
+          {},
+        );
 
-        expect(mockBuilder.whereField).toHaveBeenCalledWith("baseMint", "BaseMintPubkey123");
+        expect(mockBuilder.whereField).toHaveBeenCalledWith(
+          "baseMint",
+          "BaseMintPubkey123",
+        );
       });
     });
 
     describe("error handling", () => {
       it("returns error for unknown tool", async () => {
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "unknown_tool",
-            arguments: {},
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "unknown_tool",
+              arguments: {},
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toContain("Unknown tool");
       });
 
       it("handles RPC errors gracefully", async () => {
-        vi.mocked(safeFetchGenesisAccountV2).mockRejectedValueOnce(new Error("RPC connection failed"));
+        vi.mocked(safeFetchGenesisAccountV2).mockRejectedValueOnce(
+          new Error("RPC connection failed"),
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: { address: "SomeAddress" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: { address: "SomeAddress" },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toContain("RPC connection failed");
       });
 
       it("handles invalid public key", async () => {
-        vi.mocked(safeFetchGenesisAccountV2).mockRejectedValueOnce(new Error("Invalid public key"));
+        vi.mocked(safeFetchGenesisAccountV2).mockRejectedValueOnce(
+          new Error("Invalid public key"),
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: { address: "invalid-key" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: { address: "invalid-key" },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toContain("Invalid public key");
@@ -600,103 +735,128 @@ describe("Genesis MCP Server", () => {
 
     describe("input validation", () => {
       it("rejects missing required address param", async () => {
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: {},
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: {},
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toContain("Error");
       });
 
       it("rejects invalid type for address param", async () => {
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account",
-            arguments: { address: 12345 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account",
+              arguments: { address: 12345 },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
       });
 
       it("rejects missing required genesisAccount for bucket tools", async () => {
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_bonding_curve",
-            arguments: { bucketIndex: 0 },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_bonding_curve",
+              arguments: { bucketIndex: 0 },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
       });
 
       it("rejects invalid direction for swap quote", async () => {
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_swap_quote",
-            arguments: {
-              bondingCurveBucket: "SomeBucket",
-              amountIn: "1000000",
-              direction: "InvalidDirection",
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_swap_quote",
+              arguments: {
+                bondingCurveBucket: "SomeBucket",
+                amountIn: "1000000",
+                direction: "InvalidDirection",
+              },
             },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBe(true);
       });
 
       it("accepts valid swap directions", async () => {
-        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValue(mockBondingCurveBucketData as any);
+        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValue(
+          mockBondingCurveBucketData as any,
+        );
         vi.mocked(getSwapResult).mockReturnValue({
           amountIn: BigInt("1000"),
           fee: BigInt("10"),
           amountOut: BigInt("990"),
         });
 
-        const buyResult = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_swap_quote",
-            arguments: {
-              bondingCurveBucket: "SomeBucket",
-              amountIn: "1000",
-              direction: "Buy",
+        const buyResult = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_swap_quote",
+              arguments: {
+                bondingCurveBucket: "SomeBucket",
+                amountIn: "1000",
+                direction: "Buy",
+              },
             },
           },
-        }, {});
+          {},
+        );
         expect(buyResult.isError).toBeUndefined();
 
-        const sellResult = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_swap_quote",
-            arguments: {
-              bondingCurveBucket: "SomeBucket",
-              amountIn: "1000",
-              direction: "Sell",
+        const sellResult = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_swap_quote",
+              arguments: {
+                bondingCurveBucket: "SomeBucket",
+                amountIn: "1000",
+                direction: "Sell",
+              },
             },
           },
-        }, {});
+          {},
+        );
         expect(sellResult.isError).toBeUndefined();
       });
 
       it("uses default values for optional params", async () => {
-        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(mockGenesisAccountData as any);
+        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValueOnce(
+          mockGenesisAccountData as any,
+        );
 
-        const result = await callHandler({
-          method: "tools/call",
-          params: {
-            name: "get_genesis_account_by_mint",
-            arguments: { baseMint: "SomeMint" },
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "get_genesis_account_by_mint",
+              arguments: { baseMint: "SomeMint" },
+            },
           },
-        }, {});
+          {},
+        );
 
         expect(result.isError).toBeUndefined();
       });
@@ -716,13 +876,16 @@ describe("serializeBigInts helper", () => {
     } as any);
 
     const handler = (server as any)._requestHandlers.get("tools/call");
-    const result = await handler({
-      method: "tools/call",
-      params: {
-        name: "get_genesis_account",
-        arguments: { address: "test" },
+    const result = await handler(
+      {
+        method: "tools/call",
+        params: {
+          name: "get_genesis_account",
+          arguments: { address: "test" },
+        },
       },
-    }, {});
+      {},
+    );
 
     const data = JSON.parse(result.content[0].text);
     expect(data.nested.bigValue).toBe("9007199254740993");

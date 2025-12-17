@@ -3,7 +3,8 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createServer } from "./genesis.js";
 
-const RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+const RPC_URL =
+  process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
 async function main() {
   console.error("Starting Metaplex Genesis MCP Server (STDIO)...");

@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { publicKey } from "@metaplex-foundation/umi";
+import { publicKey, createNoopSigner } from "@metaplex-foundation/umi";
 import {
   safeFetchGenesisAccountV2,
   fetchBondingCurveBucketV2,
@@ -31,6 +31,7 @@ import {
   getCurrentPrice,
   SwapDirection,
   genesis,
+  initializeV2,
 } from "@metaplex-foundation/genesis";
 
 type ToolInput = Tool["inputSchema"];
@@ -41,12 +42,18 @@ const GetGenesisAccountSchema = z.object({
 
 const GetGenesisAccountByMintSchema = z.object({
   baseMint: z.string().describe("The public key of the base token mint"),
-  genesisIndex: z.number().default(0).describe("The index of the genesis account (default: 0)"),
+  genesisIndex: z
+    .number()
+    .default(0)
+    .describe("The index of the genesis account (default: 0)"),
 });
 
 const GetBucketSchema = z.object({
   genesisAccount: z.string().describe("The public key of the genesis account"),
-  bucketIndex: z.number().default(0).describe("The index of the bucket (default: 0)"),
+  bucketIndex: z
+    .number()
+    .default(0)
+    .describe("The index of the bucket (default: 0)"),
 });
 
 const GetDepositSchema = z.object({
@@ -55,18 +62,56 @@ const GetDepositSchema = z.object({
 });
 
 const GetCurrentPriceSchema = z.object({
-  bondingCurveBucket: z.string().describe("The public key of the bonding curve bucket"),
+  bondingCurveBucket: z
+    .string()
+    .describe("The public key of the bonding curve bucket"),
 });
 
 const ListGenesisAccountsSchema = z.object({
-  authority: z.string().optional().describe("Optional: Filter by authority public key"),
-  baseMint: z.string().optional().describe("Optional: Filter by base token mint"),
+  authority: z
+    .string()
+    .optional()
+    .describe("Optional: Filter by authority public key"),
+  baseMint: z
+    .string()
+    .optional()
+    .describe("Optional: Filter by base token mint"),
 });
 
 const GetSwapQuoteSchema = z.object({
-  bondingCurveBucket: z.string().describe("The public key of the bonding curve bucket"),
-  amountIn: z.string().describe("The input amount as a string (in lamports/base units)"),
-  direction: z.enum(["Buy", "Sell"]).describe("Swap direction: 'Buy' (SOL to tokens) or 'Sell' (tokens to SOL)"),
+  bondingCurveBucket: z
+    .string()
+    .describe("The public key of the bonding curve bucket"),
+  amountIn: z
+    .string()
+    .describe("The input amount as a string (in lamports/base units)"),
+  direction: z
+    .enum(["Buy", "Sell"])
+    .describe(
+      "Swap direction: 'Buy' (SOL to tokens) or 'Sell' (tokens to SOL)",
+    ),
+});
+
+const CreateGenesisAccountSchema = z.object({
+  baseMint: z.string().describe("The public key of the base token mint"),
+  totalSupplyBaseToken: z
+    .string()
+    .describe("The total supply of base tokens as a string"),
+  name: z.string().describe("The name of the token/genesis"),
+  uri: z.string().describe("The metadata URI"),
+  symbol: z.string().describe("The symbol of the token"),
+  fundingMode: z
+    .enum(["Mint", "Transfer"])
+    .default("Mint")
+    .describe("Funding mode: 'Mint' (0) or 'Transfer' (1)"),
+  authority: z
+    .string()
+    .optional()
+    .describe("Optional: The authority public key (defaults to payer)"),
+  payer: z
+    .string()
+    .optional()
+    .describe("Optional: The payer public key (defaults to authority)"),
 });
 
 enum ToolName {
@@ -82,6 +127,7 @@ enum ToolName {
   GET_CURRENT_PRICE = "get_current_price",
   GET_SWAP_QUOTE = "get_swap_quote",
   LIST_GENESIS_ACCOUNTS = "list_genesis_accounts",
+  CREATE_GENESIS_ACCOUNT = "create_genesis_account",
 }
 
 function serializeBigInts(obj: unknown): unknown {
@@ -106,9 +152,11 @@ function formatResponse(address: string, data: unknown): string {
   return JSON.stringify({ address, ...serialized }, null, 2);
 }
 
-export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.com") => {
+export const createServer = (
+  rpcUrl: string = "https://api.mainnet-beta.solana.com",
+) => {
   const umi = createUmi(rpcUrl).use(genesis());
-  
+
   const server = new Server(
     {
       name: "metaplex-genesis-mcp",
@@ -119,7 +167,7 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
       capabilities: {
         tools: {},
       },
-    }
+    },
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -132,7 +180,9 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
       {
         name: ToolName.GET_GENESIS_ACCOUNT_BY_MINT,
         description: "Fetch a Genesis account by its base token mint address",
-        inputSchema: zodToJsonSchema(GetGenesisAccountByMintSchema) as ToolInput,
+        inputSchema: zodToJsonSchema(
+          GetGenesisAccountByMintSchema,
+        ) as ToolInput,
       },
       {
         name: ToolName.GET_BONDING_CURVE,
@@ -176,13 +226,21 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
       },
       {
         name: ToolName.GET_SWAP_QUOTE,
-        description: "Get a swap quote including fees for a bonding curve trade",
+        description:
+          "Get a swap quote including fees for a bonding curve trade",
         inputSchema: zodToJsonSchema(GetSwapQuoteSchema) as ToolInput,
       },
       {
         name: ToolName.LIST_GENESIS_ACCOUNTS,
-        description: "List Genesis accounts, optionally filtered by authority or base mint",
+        description:
+          "List Genesis accounts, optionally filtered by authority or base mint",
         inputSchema: zodToJsonSchema(ListGenesisAccountsSchema) as ToolInput,
+      },
+      {
+        name: ToolName.CREATE_GENESIS_ACCOUNT,
+        description:
+          "Create a transaction to initialize a new Genesis account (returns base64 transaction)",
+        inputSchema: zodToJsonSchema(CreateGenesisAccountSchema) as ToolInput,
       },
     ];
 
@@ -195,19 +253,30 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
     try {
       if (name === ToolName.GET_GENESIS_ACCOUNT) {
         const { address } = GetGenesisAccountSchema.parse(args);
-        const account = await safeFetchGenesisAccountV2(umi, publicKey(address));
+        const account = await safeFetchGenesisAccountV2(
+          umi,
+          publicKey(address),
+        );
         if (!account) {
           return {
-            content: [{ type: "text", text: `Genesis account not found: ${address}` }],
+            content: [
+              { type: "text", text: `Genesis account not found: ${address}` },
+            ],
           };
         }
         return {
-          content: [{ type: "text", text: JSON.stringify(serializeBigInts(account), null, 2) }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(serializeBigInts(account), null, 2),
+            },
+          ],
         };
       }
 
       if (name === ToolName.GET_GENESIS_ACCOUNT_BY_MINT) {
-        const { baseMint, genesisIndex } = GetGenesisAccountByMintSchema.parse(args);
+        const { baseMint, genesisIndex } =
+          GetGenesisAccountByMintSchema.parse(args);
         const pda = findGenesisAccountV2Pda(umi, {
           baseMint: publicKey(baseMint),
           genesisIndex,
@@ -215,7 +284,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const account = await safeFetchGenesisAccountV2(umi, pda);
         if (!account) {
           return {
-            content: [{ type: "text", text: `Genesis account not found for mint ${baseMint} at index ${genesisIndex}` }],
+            content: [
+              {
+                type: "text",
+                text: `Genesis account not found for mint ${baseMint} at index ${genesisIndex}`,
+              },
+            ],
           };
         }
         return {
@@ -232,7 +306,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const bucket = await safeFetchBondingCurveBucketV2(umi, pda);
         if (!bucket) {
           return {
-            content: [{ type: "text", text: `Bonding curve bucket not found for genesis ${genesisAccount} at index ${bucketIndex}` }],
+            content: [
+              {
+                type: "text",
+                text: `Bonding curve bucket not found for genesis ${genesisAccount} at index ${bucketIndex}`,
+              },
+            ],
           };
         }
         return {
@@ -249,7 +328,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const bucket = await safeFetchLaunchPoolBucketV2(umi, pda);
         if (!bucket) {
           return {
-            content: [{ type: "text", text: `Launch pool bucket not found for genesis ${genesisAccount} at index ${bucketIndex}` }],
+            content: [
+              {
+                type: "text",
+                text: `Launch pool bucket not found for genesis ${genesisAccount} at index ${bucketIndex}`,
+              },
+            ],
           };
         }
         return {
@@ -266,7 +350,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const bucket = await safeFetchPresaleBucketV2(umi, pda);
         if (!bucket) {
           return {
-            content: [{ type: "text", text: `Presale bucket not found for genesis ${genesisAccount} at index ${bucketIndex}` }],
+            content: [
+              {
+                type: "text",
+                text: `Presale bucket not found for genesis ${genesisAccount} at index ${bucketIndex}`,
+              },
+            ],
           };
         }
         return {
@@ -283,7 +372,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const bucket = await safeFetchVaultBucketV2(umi, pda);
         if (!bucket) {
           return {
-            content: [{ type: "text", text: `Vault bucket not found for genesis ${genesisAccount} at index ${bucketIndex}` }],
+            content: [
+              {
+                type: "text",
+                text: `Vault bucket not found for genesis ${genesisAccount} at index ${bucketIndex}`,
+              },
+            ],
           };
         }
         return {
@@ -300,7 +394,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const deposit = await safeFetchLaunchPoolDepositV2(umi, pda);
         if (!deposit) {
           return {
-            content: [{ type: "text", text: `Launch pool deposit not found for recipient ${recipient}` }],
+            content: [
+              {
+                type: "text",
+                text: `Launch pool deposit not found for recipient ${recipient}`,
+              },
+            ],
           };
         }
         return {
@@ -317,7 +416,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const deposit = await safeFetchPresaleDepositV2(umi, pda);
         if (!deposit) {
           return {
-            content: [{ type: "text", text: `Presale deposit not found for recipient ${recipient}` }],
+            content: [
+              {
+                type: "text",
+                text: `Presale deposit not found for recipient ${recipient}`,
+              },
+            ],
           };
         }
         return {
@@ -334,7 +438,12 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
         const deposit = await safeFetchVaultDepositV2(umi, pda);
         if (!deposit) {
           return {
-            content: [{ type: "text", text: `Vault deposit not found for recipient ${recipient}` }],
+            content: [
+              {
+                type: "text",
+                text: `Vault deposit not found for recipient ${recipient}`,
+              },
+            ],
           };
         }
         return {
@@ -344,65 +453,168 @@ export const createServer = (rpcUrl: string = "https://api.mainnet-beta.solana.c
 
       if (name === ToolName.GET_CURRENT_PRICE) {
         const { bondingCurveBucket } = GetCurrentPriceSchema.parse(args);
-        const bucket = await fetchBondingCurveBucketV2(umi, publicKey(bondingCurveBucket));
+        const bucket = await fetchBondingCurveBucketV2(
+          umi,
+          publicKey(bondingCurveBucket),
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const price = getCurrentPrice(bucket as any);
         return {
-          content: [{ 
-            type: "text", 
-            text: JSON.stringify({ 
-              price: price.toString(),
-              bucketAddress: bondingCurveBucket
-            }, null, 2) 
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  price: price.toString(),
+                  bucketAddress: bondingCurveBucket,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
       if (name === ToolName.GET_SWAP_QUOTE) {
-        const { bondingCurveBucket, amountIn, direction } = GetSwapQuoteSchema.parse(args);
-        const bucket = await fetchBondingCurveBucketV2(umi, publicKey(bondingCurveBucket));
-        const swapDirection = direction === "Buy" ? SwapDirection.Buy : SwapDirection.Sell;
+        const { bondingCurveBucket, amountIn, direction } =
+          GetSwapQuoteSchema.parse(args);
+        const bucket = await fetchBondingCurveBucketV2(
+          umi,
+          publicKey(bondingCurveBucket),
+        );
+        const swapDirection =
+          direction === "Buy" ? SwapDirection.Buy : SwapDirection.Sell;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = getSwapResult(bucket as any, BigInt(amountIn), swapDirection);
+        const result = getSwapResult(
+          bucket as any,
+          BigInt(amountIn),
+          swapDirection,
+        );
         return {
-          content: [{ 
-            type: "text", 
-            text: JSON.stringify({ 
-              amountIn: result.amountIn.toString(),
-              fee: result.fee.toString(),
-              amountOut: result.amountOut.toString(),
-              direction,
-              bucketAddress: bondingCurveBucket
-            }, null, 2) 
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  amountIn: result.amountIn.toString(),
+                  fee: result.fee.toString(),
+                  amountOut: result.amountOut.toString(),
+                  direction,
+                  bucketAddress: bondingCurveBucket,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
       if (name === ToolName.LIST_GENESIS_ACCOUNTS) {
         const { authority, baseMint } = ListGenesisAccountsSchema.parse(args);
         let builder = getGenesisAccountV2GpaBuilder(umi);
-        
+
         if (authority) {
           builder = builder.whereField("authority", publicKey(authority));
         }
         if (baseMint) {
           builder = builder.whereField("baseMint", publicKey(baseMint));
         }
-        
+
         const accounts = await builder.get();
-        const formattedAccounts = accounts.map(acc => {
+        const formattedAccounts = accounts.map((acc) => {
           const serialized = serializeBigInts(acc) as Record<string, unknown>;
           return { address: acc.publicKey, ...serialized };
         });
-        
+
         return {
-          content: [{ 
-            type: "text", 
-            text: JSON.stringify({
-              count: accounts.length,
-              accounts: formattedAccounts
-            }, null, 2) 
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  count: accounts.length,
+                  accounts: formattedAccounts,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      if (name === ToolName.CREATE_GENESIS_ACCOUNT) {
+        const {
+          baseMint,
+          totalSupplyBaseToken,
+          name: tokenName,
+          uri,
+          symbol,
+          fundingMode,
+          authority,
+          payer,
+        } = CreateGenesisAccountSchema.parse(args);
+
+        const authorityKey = authority
+          ? publicKey(authority)
+          : payer
+            ? publicKey(payer)
+            : null;
+        const payerKey = payer
+          ? publicKey(payer)
+          : authority
+            ? publicKey(authority)
+            : null;
+
+        if (!authorityKey || !payerKey) {
+          throw new Error(
+            "At least one of authority or payer must be provided.",
+          );
+        }
+
+        const fundingModeVal = fundingMode === "Mint" ? 0 : 1;
+
+        // Fetch latest blockhash
+        const latestBlockhash = await umi.rpc.getLatestBlockhash();
+
+        // Create NoopSigners
+        const authoritySigner = createNoopSigner(authorityKey);
+        const payerSigner = createNoopSigner(payerKey);
+        // baseMint must be a signer if it's the mint authority being transferred
+        const baseMintSigner = createNoopSigner(publicKey(baseMint));
+
+        const txBuilder = initializeV2(umi, {
+          baseMint: baseMintSigner,
+          authority: authoritySigner,
+          payer: payerSigner,
+          fundingMode: fundingModeVal,
+          totalSupplyBaseToken: BigInt(totalSupplyBaseToken),
+          name: tokenName,
+          uri,
+          symbol,
+        }).setBlockhash(latestBlockhash);
+
+        const tx = await txBuilder.build(umi);
+        const serialized = umi.transactions.serialize(tx);
+        const base64Tx = Buffer.from(serialized).toString("base64");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  transaction: base64Tx,
+                  message:
+                    "Sign and submit this transaction to initialize the Genesis account.",
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
