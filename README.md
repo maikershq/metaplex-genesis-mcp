@@ -21,9 +21,28 @@ An MCP server that exposes tools for interacting with the [Metaplex Genesis](htt
 - 💰 **Bucket Data** - Query bonding curves, launch pools, presales, vaults
 - 👤 **User Deposits** - Fetch deposit info for any recipient
 - 📈 **Trading Helpers** - Current prices and swap quotes with fees
-- 🔧 **Transaction Creation** - Build Genesis initialization transactions
+- 🔧 **Transaction Creation** - Build Genesis initialization and swap transactions
 
 ## Quick Start
+
+### Usage with npx (Recommended)
+
+Run the server directly without installation:
+
+```bash
+npx metaplex-genesis-mcp
+```
+
+### Installation
+
+Install globally to use as a command:
+
+```bash
+npm install -g metaplex-genesis-mcp
+metaplex-genesis-mcp
+```
+
+### From Source
 
 ```bash
 pnpm install
@@ -46,6 +65,24 @@ docker run -e SOLANA_RPC_URL=https://api.mainnet-beta.solana.com metaplex-genesi
 ## Configuration
 
 Add to your MCP config (Cursor `.cursor/mcp.json` or Claude Desktop):
+
+```json
+{
+  "mcpServers": {
+    "metaplex-genesis": {
+      "command": "npx",
+      "args": ["-y", "metaplex-genesis-mcp"],
+      "env": {
+        "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com"
+      }
+    }
+  }
+}
+```
+
+### Local Development Configuration
+
+If running from source:
 
 ```json
 {
@@ -104,6 +141,7 @@ Add to your MCP config (Cursor `.cursor/mcp.json` or Claude Desktop):
 | Tool                     | Description                                         |
 | ------------------------ | --------------------------------------------------- |
 | `create_genesis_account` | Build a Genesis initialization transaction (base64) |
+| `swap`                   | Build a swap transaction (base64)                   |
 
 ## Project Structure
 
