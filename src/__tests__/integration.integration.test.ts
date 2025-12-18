@@ -54,7 +54,7 @@ describe("MCP Server Integration", () => {
     it("returns all 12 tools", async () => {
       const result = await client.listTools();
 
-      expect(result.tools).toHaveLength(12);
+      expect(result.tools).toHaveLength(13);
       expect(result.tools.map((t) => t.name)).toContain("get_genesis_account");
       expect(result.tools.map((t) => t.name)).toContain("get_swap_quote");
     });

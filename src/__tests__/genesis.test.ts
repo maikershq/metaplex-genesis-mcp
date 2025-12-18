@@ -182,7 +182,7 @@ describe("Genesis MCP Server", () => {
       const handler = (server as any)._requestHandlers.get("tools/list");
       const result = await handler(request, {});
 
-      expect(result.tools).toHaveLength(12);
+      expect(result.tools).toHaveLength(13);
       expect(result.tools.map((t: any) => t.name)).toEqual([
         "get_genesis_account",
         "get_genesis_account_by_mint",
@@ -196,6 +196,7 @@ describe("Genesis MCP Server", () => {
         "get_current_price",
         "get_swap_quote",
         "list_genesis_accounts",
+        "create_genesis_account",
       ]);
     });
 
