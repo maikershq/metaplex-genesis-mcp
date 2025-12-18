@@ -1,4 +1,9 @@
-import { Umi, publicKey, createNoopSigner } from "@metaplex-foundation/umi";
+import {
+  Umi,
+  publicKey,
+  createNoopSigner,
+  generateSigner,
+} from "@metaplex-foundation/umi";
 import { initializeV2 } from "@metaplex-foundation/genesis";
 import { CreateGenesisAccountSchema } from "../types/schemas.js";
 import { ToolResult } from "../types/tools.js";
@@ -38,7 +43,21 @@ export async function createGenesisAccount(
 
   const authoritySigner = createNoopSigner(authorityKey);
   const payerSigner = createNoopSigner(payerKey);
-  const baseMintSigner = createNoopSigner(publicKey(baseMint));
+
+  // Generate a new keypair for the baseMint if "generate" is passed
+  // Otherwise use provided address as NoopSigner
+  let baseMintSigner;
+  let generatedMintSecretKey: string | undefined;
+
+  if (baseMint === "generate") {
+    const generatedMint = generateSigner(umi);
+    baseMintSigner = generatedMint;
+    generatedMintSecretKey = Buffer.from(generatedMint.secretKey).toString(
+      "base64",
+    );
+  } else {
+    baseMintSigner = createNoopSigner(publicKey(baseMint));
+  }
 
   const txBuilder = initializeV2(umi, {
     baseMint: baseMintSigner,
@@ -57,19 +76,24 @@ export async function createGenesisAccount(
   const serialized = umi.transactions.serialize(tx);
   const base64Tx = Buffer.from(serialized).toString("base64");
 
+  const response: Record<string, unknown> = {
+    transaction: base64Tx,
+    message:
+      "Sign and submit this transaction to initialize the Genesis account.",
+    baseMint: baseMintSigner.publicKey.toString(),
+  };
+
+  if (generatedMintSecretKey) {
+    response.mintSecretKey = generatedMintSecretKey;
+    response.message =
+      "Sign and submit this transaction. The mint keypair has been generated and must be used to sign.";
+  }
+
   return {
     content: [
       {
         type: "text",
-        text: JSON.stringify(
-          {
-            transaction: base64Tx,
-            message:
-              "Sign and submit this transaction to initialize the Genesis account.",
-          },
-          null,
-          2,
-        ),
+        text: JSON.stringify(response, null, 2),
       },
     ],
   };
