@@ -16,6 +16,7 @@ import {
   GetSwapQuoteSchema,
   ListGenesisAccountsSchema,
   CreateGenesisAccountSchema,
+  SwapSchema,
 } from "./types/schemas.js";
 import {
   getGenesisAccount,
@@ -34,7 +35,7 @@ import {
   getVaultDeposit,
 } from "./tools/deposits.js";
 import { getCurrentPriceTool, getSwapQuote } from "./tools/trading.js";
-import { createGenesisAccount } from "./tools/transactions.js";
+import { createGenesisAccount, swap } from "./tools/transactions.js";
 
 type ToolInput = Tool["inputSchema"];
 
@@ -113,6 +114,11 @@ export const createServer = (rpcUrl: string = DEFAULT_RPC_URL) => {
       inputSchema: zodToJsonSchema(GetSwapQuoteSchema) as ToolInput,
     },
     {
+      name: ToolName.SWAP,
+      description: "Create a swap transaction (returns base64 transaction)",
+      inputSchema: zodToJsonSchema(SwapSchema) as ToolInput,
+    },
+    {
       name: ToolName.LIST_GENESIS_ACCOUNTS,
       description:
         "List Genesis accounts, optionally filtered by authority or base mint",
@@ -169,6 +175,9 @@ export const createServer = (rpcUrl: string = DEFAULT_RPC_URL) => {
           break;
         case ToolName.GET_SWAP_QUOTE:
           result = await getSwapQuote(umi, args);
+          break;
+        case ToolName.SWAP:
+          result = await swap(umi, args);
           break;
         case ToolName.LIST_GENESIS_ACCOUNTS:
           result = await listGenesisAccounts(umi, args);

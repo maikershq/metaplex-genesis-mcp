@@ -69,41 +69,41 @@ Add to your MCP config (Cursor `.cursor/mcp.json` or Claude Desktop):
 
 ### Account Fetching
 
-| Tool                          | Description                                |
-| ----------------------------- | ------------------------------------------ |
-| `get_genesis_account`         | Fetch a Genesis account by address         |
-| `get_genesis_account_by_mint` | Fetch a Genesis account by base token mint |
+| Tool                          | Description                                 |
+| ----------------------------- | ------------------------------------------- |
+| `get_genesis_account`         | Fetch a Genesis account by address          |
+| `get_genesis_account_by_mint` | Fetch a Genesis account by base token mint  |
 | `list_genesis_accounts`       | List Genesis accounts with optional filters |
 
 ### Bucket Data
 
-| Tool               | Description                     |
-| ------------------ | ------------------------------- |
+| Tool                | Description                     |
+| ------------------- | ------------------------------- |
 | `get_bonding_curve` | Fetch bonding curve bucket data |
-| `get_launch_pool`  | Fetch launch pool bucket data   |
-| `get_presale`      | Fetch presale bucket data       |
-| `get_vault`        | Fetch vault bucket data         |
+| `get_launch_pool`   | Fetch launch pool bucket data   |
+| `get_presale`       | Fetch presale bucket data       |
+| `get_vault`         | Fetch vault bucket data         |
 
 ### User Deposits
 
-| Tool                      | Description                              |
-| ------------------------- | ---------------------------------------- |
-| `get_launch_pool_deposit` | Fetch a recipient's launch pool deposit  |
-| `get_presale_deposit`     | Fetch a recipient's presale deposit      |
-| `get_vault_deposit`       | Fetch a recipient's vault deposit        |
+| Tool                      | Description                             |
+| ------------------------- | --------------------------------------- |
+| `get_launch_pool_deposit` | Fetch a recipient's launch pool deposit |
+| `get_presale_deposit`     | Fetch a recipient's presale deposit     |
+| `get_vault_deposit`       | Fetch a recipient's vault deposit       |
 
 ### Trading Helpers
 
-| Tool               | Description                      |
-| ------------------ | -------------------------------- |
+| Tool                | Description                      |
+| ------------------- | -------------------------------- |
 | `get_current_price` | Get current bonding curve price  |
-| `get_swap_quote`   | Calculate swap amounts with fees |
+| `get_swap_quote`    | Calculate swap amounts with fees |
 
 ### Transaction Creation
 
-| Tool                    | Description                                           |
-| ----------------------- | ----------------------------------------------------- |
-| `create_genesis_account` | Build a Genesis initialization transaction (base64)  |
+| Tool                     | Description                                         |
+| ------------------------ | --------------------------------------------------- |
+| `create_genesis_account` | Build a Genesis initialization transaction (base64) |
 
 ## Project Structure
 

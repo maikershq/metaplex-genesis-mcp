@@ -10,6 +10,7 @@ export enum ToolName {
   GET_VAULT_DEPOSIT = "get_vault_deposit",
   GET_CURRENT_PRICE = "get_current_price",
   GET_SWAP_QUOTE = "get_swap_quote",
+  SWAP = "swap",
   LIST_GENESIS_ACCOUNTS = "list_genesis_accounts",
   CREATE_GENESIS_ACCOUNT = "create_genesis_account",
 }

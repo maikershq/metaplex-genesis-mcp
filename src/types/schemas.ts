@@ -56,6 +56,28 @@ export const GetSwapQuoteSchema = z.object({
     ),
 });
 
+export const SwapSchema = z.object({
+  bondingCurveBucket: z
+    .string()
+    .describe("The public key of the bonding curve bucket"),
+  amountIn: z
+    .string()
+    .describe("The input amount as a string (in lamports/base units)"),
+  minAmountOut: z
+    .string()
+    .describe(
+      "The minimum output amount as a string (for slippage protection)",
+    ),
+  direction: z
+    .enum(["Buy", "Sell"])
+    .describe(
+      "Swap direction: 'Buy' (SOL to tokens) or 'Sell' (tokens to SOL)",
+    ),
+  authority: z
+    .string()
+    .describe("The public key of the authority (user wallet)"),
+});
+
 export const CreateGenesisAccountSchema = z.object({
   baseMint: z.string().describe("The public key of the base token mint"),
   totalSupplyBaseToken: z
@@ -89,6 +111,7 @@ export type ListGenesisAccountsInput = z.infer<
   typeof ListGenesisAccountsSchema
 >;
 export type GetSwapQuoteInput = z.infer<typeof GetSwapQuoteSchema>;
+export type SwapInput = z.infer<typeof SwapSchema>;
 export type CreateGenesisAccountInput = z.infer<
   typeof CreateGenesisAccountSchema
 >;

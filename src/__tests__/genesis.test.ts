@@ -141,6 +141,16 @@ vi.mock("@metaplex-foundation/genesis", () => ({
     whereField: vi.fn().mockReturnThis(),
     get: vi.fn(),
   })),
+  initializeV2: vi.fn(() => ({
+    setBlockhash: vi.fn().mockReturnThis(),
+    setFeePayer: vi.fn().mockReturnThis(),
+    build: vi.fn().mockResolvedValue("mocked-tx"),
+  })),
+  swapV2: vi.fn(() => ({
+    setBlockhash: vi.fn().mockReturnThis(),
+    setFeePayer: vi.fn().mockReturnThis(),
+    build: vi.fn().mockResolvedValue("mocked-swap-tx"),
+  })),
   getSwapResult: vi.fn(),
   getCurrentPrice: vi.fn(),
   SwapDirection: { Buy: 0, Sell: 1 },
@@ -587,6 +597,31 @@ describe("Genesis MCP Server", () => {
         const data = JSON.parse(result.content[0].text);
         expect(data.direction).toBe("Sell");
         expect(data.amountOut).toBe("950000000");
+      });
+    });
+
+    describe("swap", () => {
+      it("creates swap transaction", async () => {
+        const result = await callHandler(
+          {
+            method: "tools/call",
+            params: {
+              name: "swap",
+              arguments: {
+                bondingCurveBucket: "BondingCurveBucketPubkey123",
+                amountIn: "1000000000",
+                minAmountOut: "950000000",
+                direction: "Buy",
+                authority: "AuthorityPubkey123",
+              },
+            },
+          },
+          {},
+        );
+
+        const data = JSON.parse(result.content[0].text);
+        expect(data.transaction).toBeDefined();
+        expect(data.message).toContain("Sign and submit");
       });
     });
 

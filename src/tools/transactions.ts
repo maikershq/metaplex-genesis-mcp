@@ -4,9 +4,55 @@ import {
   createNoopSigner,
   generateSigner,
 } from "@metaplex-foundation/umi";
-import { initializeV2 } from "@metaplex-foundation/genesis";
-import { CreateGenesisAccountSchema } from "../types/schemas.js";
+import {
+  initializeV2,
+  swapV2,
+  SwapDirection,
+} from "@metaplex-foundation/genesis";
+import { CreateGenesisAccountSchema, SwapSchema } from "../types/schemas.js";
 import { ToolResult } from "../types/tools.js";
+
+export async function swap(umi: Umi, args: unknown): Promise<ToolResult> {
+  const { bondingCurveBucket, amountIn, minAmountOut, direction, authority } =
+    SwapSchema.parse(args);
+
+  const authorityKey = publicKey(authority);
+  const latestBlockhash = await umi.rpc.getLatestBlockhash();
+  const authoritySigner = createNoopSigner(authorityKey);
+
+  const swapDirection =
+    direction === "Buy" ? SwapDirection.Buy : SwapDirection.Sell;
+
+  const txBuilder = swapV2(umi, {
+    bondingCurveBucket: publicKey(bondingCurveBucket),
+    authority: authoritySigner,
+    amountIn: BigInt(amountIn),
+    minAmountOut: BigInt(minAmountOut),
+    direction: swapDirection,
+  })
+    .setBlockhash(latestBlockhash)
+    .setFeePayer(authoritySigner);
+
+  const tx = await txBuilder.build(umi);
+  const serialized = umi.transactions.serialize(tx);
+  const base64Tx = Buffer.from(serialized).toString("base64");
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(
+          {
+            transaction: base64Tx,
+            message: "Sign and submit this transaction to execute the swap.",
+          },
+          null,
+          2,
+        ),
+      },
+    ],
+  };
+}
 
 export async function createGenesisAccount(
   umi: Umi,
