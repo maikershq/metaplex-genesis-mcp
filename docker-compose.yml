@@ -1,0 +1,7 @@
+services:
+  metaplex-genesis-mcp:
+    build: .
+    environment:
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}
+    restart: unless-stopped
+
