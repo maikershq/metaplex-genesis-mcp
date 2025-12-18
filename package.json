@@ -2,13 +2,33 @@
   "name": "metaplex-genesis-mcp",
   "version": "1.0.0",
   "description": "MCP server for interacting with Metaplex Genesis program on Solana",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
+  "author": "maikers <dev@maikers.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maikershq/metaplex-genesis-mcp.git"
+  },
+  "homepage": "https://github.com/maikershq/metaplex-genesis-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/maikershq/metaplex-genesis-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "metaplex",
+    "genesis",
+    "solana",
+    "blockchain",
+    "ai",
+    "llm"
+  ],
   "bin": {
     "metaplex-genesis-mcp": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/__tests__"
   ],
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
