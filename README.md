@@ -2,7 +2,7 @@
 
 **Model Context Protocol server for Metaplex Genesis.**
 
-> Fetch accounts. Query bonding curves. Get swap quotes.
+> Fetch accounts. Query bonding curves. Get swap quotes. Create Genesis transactions.
 
 MCP tools for interacting with Metaplex Genesis on Solana.
 
@@ -21,12 +21,26 @@ An MCP server that exposes tools for interacting with the [Metaplex Genesis](htt
 - 💰 **Bucket Data** - Query bonding curves, launch pools, presales, vaults
 - 👤 **User Deposits** - Fetch deposit info for any recipient
 - 📈 **Trading Helpers** - Current prices and swap quotes with fees
+- 🔧 **Transaction Creation** - Build Genesis initialization transactions
 
 ## Quick Start
 
 ```bash
 pnpm install
 pnpm build
+```
+
+### Docker
+
+```bash
+docker compose up -d
+```
+
+Or build manually:
+
+```bash
+docker build -t metaplex-genesis-mcp .
+docker run -e SOLANA_RPC_URL=https://api.mainnet-beta.solana.com metaplex-genesis-mcp
 ```
 
 ## Configuration
@@ -85,37 +99,33 @@ Add to your MCP config (Cursor `.cursor/mcp.json` or Claude Desktop):
 | `get_current_price` | Get current bonding curve price  |
 | `get_swap_quote`   | Calculate swap amounts with fees |
 
-## Examples
+### Transaction Creation
 
-### Get a Genesis Account by Mint
+| Tool                    | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `create_genesis_account` | Build a Genesis initialization transaction (base64)  |
 
-```
-Use get_genesis_account_by_mint with baseMint "TokenMintAddress..."
-```
-
-### Get Swap Quote
+## Project Structure
 
 ```
-Use get_swap_quote with:
-- bondingCurveBucket: "BucketAddress..."
-- amountIn: "1000000000" (1 SOL in lamports)
-- direction: "Buy"
+src/
+├── tools/           # Tool handlers (accounts, buckets, deposits, trading, transactions)
+├── types/           # TypeScript types and Zod schemas
+├── services/        # Metaplex SDK service layer
+├── utils/           # Serialization and formatting helpers
+├── server.ts        # MCP server setup
+├── stdio.ts         # Stdio transport entry point
+└── index.ts         # CLI entry point
 ```
 
 ## Testing
 
 ```bash
-pnpm test              # Unit tests (31 tests, mocked)
+pnpm test              # Unit tests (mocked)
 pnpm test:watch        # Unit tests in watch mode
-pnpm test:integration  # Integration tests (8 tests, real MCP client)
+pnpm test:integration  # Integration tests (real MCP client)
 pnpm test:smoke        # Shell smoke test
 ```
-
-| Type        | Tests | Description                             |
-| ----------- | ----- | --------------------------------------- |
-| Unit        | 31    | Mocked dependencies, fast               |
-| Integration | 8     | Real MCP client via stdio, hits mainnet |
-| Smoke       | 1     | Shell script, verifies server starts    |
 
 ## Development
 
@@ -123,8 +133,6 @@ pnpm test:smoke        # Shell smoke test
 pnpm install       # Install dependencies
 pnpm build         # Build for production
 pnpm test          # Run tests
-pnpm lint          # ESLint
-pnpm format        # Prettier
 ```
 
 ## Related Repositories
