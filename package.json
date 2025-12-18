@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@metaplex-foundation/genesis": "^0.14.0",
+    "@metaplex-foundation/mpl-toolbox": "^0.10.0",
     "@metaplex-foundation/umi": "^1.4.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
     "@modelcontextprotocol/sdk": "^1.24.0",

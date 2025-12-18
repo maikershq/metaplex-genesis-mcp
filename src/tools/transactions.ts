@@ -49,7 +49,9 @@ export async function createGenesisAccount(
     name: tokenName,
     uri,
     symbol,
-  }).setBlockhash(latestBlockhash);
+  })
+    .setBlockhash(latestBlockhash)
+    .setFeePayer(payerSigner);
 
   const tx = await txBuilder.build(umi);
   const serialized = umi.transactions.serialize(tx);
