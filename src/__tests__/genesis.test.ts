@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createServer } from "../genesis.js";
+import { createServer } from "../server.js";
 
 vi.mock("@metaplex-foundation/umi-bundle-defaults", () => ({
   createUmi: vi.fn(() => ({
