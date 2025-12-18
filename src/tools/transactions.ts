@@ -6,8 +6,10 @@ import {
 } from "@metaplex-foundation/umi";
 import {
   initializeV2,
-  swapV2,
+  swapBondingCurveV2,
   SwapDirection,
+  fetchBondingCurveBucketV2,
+  safeFetchGenesisAccountV2,
 } from "@metaplex-foundation/genesis";
 import { CreateGenesisAccountSchema, SwapSchema } from "../types/schemas.js";
 import { ToolResult } from "../types/tools.js";
@@ -23,12 +25,30 @@ export async function swap(umi: Umi, args: unknown): Promise<ToolResult> {
   const swapDirection =
     direction === "Buy" ? SwapDirection.Buy : SwapDirection.Sell;
 
-  const txBuilder = swapV2(umi, {
-    bondingCurveBucket: publicKey(bondingCurveBucket),
-    authority: authoritySigner,
-    amountIn: BigInt(amountIn),
+  const bucketPda = publicKey(bondingCurveBucket);
+  const bucketAccount = await fetchBondingCurveBucketV2(umi, bucketPda);
+  const genesisAccountPda = bucketAccount.bucket.genesis;
+  const genesisAccount = await safeFetchGenesisAccountV2(
+    umi,
+    genesisAccountPda,
+  );
+
+  if (!genesisAccount) {
+    throw new Error(
+      `Genesis account not found for bucket ${bondingCurveBucket}`,
+    );
+  }
+
+  const txBuilder = swapBondingCurveV2(umi, {
+    bucket: bucketPda,
+    genesisAccount: genesisAccountPda,
+    baseMint: genesisAccount.baseMint,
+    quoteMint: genesisAccount.quoteMint,
+    swapper: authoritySigner,
+    payer: authoritySigner,
+    amount: BigInt(amountIn),
     minAmountOut: BigInt(minAmountOut),
-    direction: swapDirection,
+    swapDirection: swapDirection,
   })
     .setBlockhash(latestBlockhash)
     .setFeePayer(authoritySigner);

@@ -4,11 +4,24 @@ import { createServer } from "../server.js";
 vi.mock("@metaplex-foundation/umi-bundle-defaults", () => ({
   createUmi: vi.fn(() => ({
     use: vi.fn().mockReturnThis(),
+    rpc: {
+      getLatestBlockhash: vi
+        .fn()
+        .mockResolvedValue({ blockhash: "123", lastValidBlockHeight: 123 }),
+    },
+    transactions: {
+      serialize: vi.fn().mockReturnValue(new Uint8Array([])),
+    },
   })),
 }));
 
 vi.mock("@metaplex-foundation/umi", () => ({
   publicKey: vi.fn((key: string) => key),
+  createNoopSigner: vi.fn((key) => ({ publicKey: key })),
+  generateSigner: vi.fn(() => ({
+    publicKey: "GeneratedSigner",
+    secretKey: new Uint8Array([]),
+  })),
 }));
 
 const mockGenesisAccountData = {
@@ -41,7 +54,7 @@ const mockBondingCurveBucketData = {
   withdrawFee: BigInt("50000"),
   quoteTokenDepositTotal: BigInt("10000000000"),
   bucket: {
-    genesisAccount: "GenesisAccountPubkey123",
+    genesis: "GenesisAccountPubkey123",
     bucketIndex: 0,
     state: { __kind: "Active" },
     allocatedSupply: BigInt("500000000000"),
@@ -146,7 +159,7 @@ vi.mock("@metaplex-foundation/genesis", () => ({
     setFeePayer: vi.fn().mockReturnThis(),
     build: vi.fn().mockResolvedValue("mocked-tx"),
   })),
-  swapV2: vi.fn(() => ({
+  swapBondingCurveV2: vi.fn(() => ({
     setBlockhash: vi.fn().mockReturnThis(),
     setFeePayer: vi.fn().mockReturnThis(),
     build: vi.fn().mockResolvedValue("mocked-swap-tx"),
@@ -169,6 +182,7 @@ import {
   getGenesisAccountV2GpaBuilder,
   getSwapResult,
   getCurrentPrice,
+  swapBondingCurveV2,
 } from "@metaplex-foundation/genesis";
 
 describe("Genesis MCP Server", () => {
@@ -192,7 +206,7 @@ describe("Genesis MCP Server", () => {
       const handler = (server as any)._requestHandlers.get("tools/list");
       const result = await handler(request, {});
 
-      expect(result.tools).toHaveLength(13);
+      expect(result.tools).toHaveLength(14);
       expect(result.tools.map((t: any) => t.name)).toEqual([
         "get_genesis_account",
         "get_genesis_account_by_mint",
@@ -205,6 +219,7 @@ describe("Genesis MCP Server", () => {
         "get_vault_deposit",
         "get_current_price",
         "get_swap_quote",
+        "swap",
         "list_genesis_accounts",
         "create_genesis_account",
       ]);
@@ -602,6 +617,13 @@ describe("Genesis MCP Server", () => {
 
     describe("swap", () => {
       it("creates swap transaction", async () => {
+        vi.mocked(fetchBondingCurveBucketV2).mockResolvedValue(
+          mockBondingCurveBucketData as any,
+        );
+        vi.mocked(safeFetchGenesisAccountV2).mockResolvedValue(
+          mockGenesisAccountData as any,
+        );
+
         const result = await callHandler(
           {
             method: "tools/call",
